@@ -331,7 +331,7 @@ export default function Home() {
             fontStyle: "italic",
           }}
         >
-          Swipe to see more services →
+          Swipe to see more services  →
         </Typography>
       </Box>
     </>
