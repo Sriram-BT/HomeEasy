@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import Box from "@mui/material/Box";
 import Card from "@mui/material/Card";
 import CardActions from "@mui/material/CardActions";
@@ -10,7 +11,6 @@ import ArrowBackIosIcon from "@mui/icons-material/ArrowBackIos";
 import SideBox from "../components/sidebox";
 import api from "../Api/axios";
 
-// Example static images for collage (top 4)
 import AC_repair from "../Assets/AC_Repair.jpg";
 import Deepclean from "../Assets/Deepclean.jpg";
 import Plumbing from "../Assets/Plumbing.jpg";
@@ -19,6 +19,7 @@ import SofaCleaning from "../Assets/SofaCleaning.jpg";
 export default function Home() {
   const [services, setServices] = useState([]);
   const [scrollPosition, setScrollPosition] = useState(0);
+  const navigate = useNavigate();
 
   const cardWidth = 250;
   const gap = 16;
@@ -46,7 +47,11 @@ export default function Home() {
     fetchServices();
   }, []);
 
-  console.log("home",services)
+  const handleCardClick = (service) => {
+    navigate("/Contents", {
+      state: { serviceId: service._id, serviceName: service.ServiceName },
+    });
+  };
 
   const handleScrollRight = () => {
     const maxScroll = (services.length - cardsToShow) * (cardWidth + gap);
@@ -72,7 +77,7 @@ export default function Home() {
   return (
     <>
       {/* === SideBox + Collage Section === */}
-      <Box
+<Box
         sx={{
           display: "flex",
           flexDirection: { xs: "column", md: "row" },
@@ -115,14 +120,26 @@ export default function Home() {
               maxWidth: {
                 xs: "100%",
                 sm: 500,
-                md: (cardWidth * cardsToShow) + (gap * (cardsToShow - 1)),
+                md: cardWidth * cardsToShow + gap * (cardsToShow - 1),
               },
               height: { xs: 150, sm: 180, md: 350 },
-              gap: 1,
+              gap: { xs: 0.75, sm: 1, md: 1.5 },
               mb: { xs: 2, md: 4 },
-              borderRadius: 2,
+              borderRadius: { xs: 2, md: 3 },
               overflow: "hidden",
-              boxShadow: 3,
+              boxShadow: "0 8px 32px rgba(0, 0, 0, 0.12)",
+              position: "relative",
+              "&::before": {
+                content: '""',
+                position: "absolute",
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                background: "linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 100%)",
+                pointerEvents: "none",
+                zIndex: 1,
+              },
             }}
           >
             {collageImages.map((img, i) => (
@@ -132,8 +149,28 @@ export default function Home() {
                   width: "100%",
                   height: "100%",
                   overflow: "hidden",
-                  transition: "transform 0.3s",
-                  "&:hover": { transform: "scale(1.05)" },
+                  position: "relative",
+                  cursor: "pointer",
+                  "&::after": {
+                    content: '""',
+                    position: "absolute",
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    background: "linear-gradient(to bottom, rgba(0,0,0,0) 0%, rgba(0,0,0,0.3) 100%)",
+                    opacity: 0,
+                    transition: "opacity 0.4s ease",
+                  },
+                  "&:hover": {
+                    "& img": {
+                      transform: "scale(1.1)",
+                      filter: "brightness(1.1)",
+                    },
+                    "&::after": {
+                      opacity: 1,
+                    },
+                  },
                 }}
               >
                 <img
@@ -143,6 +180,8 @@ export default function Home() {
                     width: "100%",
                     height: "100%",
                     objectFit: "cover",
+                    transition: "transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94), filter 0.4s ease",
+                    display: "block",
                   }}
                 />
               </Box>
@@ -156,14 +195,13 @@ export default function Home() {
         sx={{
           display: "flex",
           flexDirection: "column",
-          alignItems: "flex-start", // align text and cards to left
+          alignItems: "flex-start",
           width: "100%",
           p: { xs: 1, sm: 2, md: 3 },
           maxWidth: "1200px",
           margin: "0 auto",
         }}
       >
-        {/* Section Title */}
         <Typography
           variant="h4"
           fontWeight="bold"
@@ -186,7 +224,7 @@ export default function Home() {
             px: { xs: 1, md: 0 },
             ml: 0,
             display: "flex",
-            justifyContent: "flex-start", // ensure cards align from left
+            justifyContent: "flex-start",
           }}
         >
           {canScrollLeft && (
@@ -208,97 +246,220 @@ export default function Home() {
             </IconButton>
           )}
 
+<Box
+  sx={{
+    display: "flex",
+    gap: 3,
+    overflow: { xs: "auto", md: "hidden" },
+    width: "100%",
+    justifyContent: "flex-start",
+    scrollSnapType: { xs: "x mandatory", md: "none" },
+    WebkitOverflowScrolling: "touch",
+    "&::-webkit-scrollbar": { 
+      height: { xs: 8, md: 0 },
+    },
+    "&::-webkit-scrollbar-track": {
+      background: "rgba(0,0,0,0.05)",
+      borderRadius: 4,
+    },
+    "&::-webkit-scrollbar-thumb": {
+      background: "rgba(0,0,0,0.2)",
+      borderRadius: 4,
+      "&:hover": {
+        background: "rgba(0,0,0,0.3)",
+      },
+    },
+    pb: { xs: 2, md: 0 },
+  }}
+>
+  <Box
+    sx={{
+      display: "flex",
+      gap: 3,
+      transition: { xs: "none", md: "transform 0.5s ease-in-out" },
+      transform: { xs: "none", md: `translateX(-${scrollPosition}px)` },
+    }}
+  >
+    {services.map((service) => (
+      <Card
+        key={service._id}
+        onClick={() => handleCardClick(service)}
+        sx={{
+          cursor: "pointer",
+          width: { xs: 240, sm: 260, md: cardWidth },
+          minWidth: { xs: 240, sm: 260, md: cardWidth },
+          height: { xs: 280, sm: 300, md: 380 },
+          flexShrink: 0,
+          scrollSnapAlign: { xs: "center", md: "none" },
+          borderRadius: 3,
+          overflow: "hidden",
+          background: "linear-gradient(145deg, #ffffff 0%, #f8f9fa 100%)",
+          border: "1px solid",
+          borderColor: "divider",
+          transition: "all 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
+          position: "relative",
+          "&::before": {
+            content: '""',
+            position: "absolute",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: "linear-gradient(135deg, rgba(99, 102, 241, 0.05) 0%, rgba(168, 85, 247, 0.05) 100%)",
+            opacity: 0,
+            transition: "opacity 0.4s ease",
+            zIndex: 1,
+          },
+          "&:hover": {
+            transform: "translateY(-12px) scale(1.02)",
+            boxShadow: "0 20px 40px rgba(0,0,0,0.12), 0 0 0 1px rgba(99, 102, 241, 0.1)",
+            borderColor: "primary.main",
+            "&::before": {
+              opacity: 1,
+            },
+          },
+        }}
+      >
+        <CardContent sx={{ p: 0, height: "100%", display: "flex", flexDirection: "column" }}>
+          {/* Image Container */}
           <Box
             sx={{
-              display: "flex",
-              gap: 2,
-              overflow: { xs: "auto", md: "hidden" },
+              height: { xs: 120, md: 220 },
               width: "100%",
-              justifyContent: "flex-start", // left-aligned cards
-              scrollSnapType: { xs: "x mandatory", md: "none" },
-              WebkitOverflowScrolling: "touch",
-              "&::-webkit-scrollbar": { height: { xs: 6, md: 0 } },
+              overflow: "hidden",
+              position: "relative",
+              "&::after": {
+                content: '""',
+                position: "absolute",
+                bottom: 0,
+                left: 0,
+                right: 0,
+                height: "40%",
+                background: "linear-gradient(to top, rgba(0,0,0,0.2), transparent)",
+                opacity: 0,
+                transition: "opacity 0.4s ease",
+              },
+              "&:hover::after": {
+                opacity: 1,
+              },
             }}
           >
+            {serviceImages[service.ServiceName] ? (
+              <img
+                src={serviceImages[service.ServiceName]}
+                alt={service.ServiceName}
+                style={{
+                  width: "100%",
+                  height: "100%",
+                  objectFit: "cover",
+                  transition: "transform 0.4s ease",
+                }}
+                onMouseOver={(e) => {
+                  e.currentTarget.style.transform = "scale(1.1)";
+                }}
+                onMouseOut={(e) => {
+                  e.currentTarget.style.transform = "scale(1)";
+                }}
+              />
+            ) : (
+              <Box
+                sx={{
+                  width: "100%",
+                  height: "100%",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                  color: "#fff",
+                  fontSize: 14,
+                  fontWeight: 600,
+                }}
+              >
+                No Image
+              </Box>
+            )}
+          </Box>
+
+          {/* Content Container */}
+          <Box 
+            sx={{ 
+              p: { xs: 2, md: 2.5 },
+              flex: 1,
+              display: "flex",
+              flexDirection: "column",
+              gap: 1,
+              position: "relative",
+              zIndex: 2,
+            }}
+          >
+            {/* Service Name */}
+            <Typography
+              variant="h6"
+              sx={{
+                fontWeight: 700,
+                fontSize: { xs: 15, md: 18 },
+                color: "text.primary",
+                lineHeight: 1.3,
+                display: "-webkit-box",
+                WebkitLineClamp: 2,
+                WebkitBoxOrient: "vertical",
+                overflow: "hidden",
+                mb: 0.5,
+                letterSpacing: "-0.01em",
+              }}
+            >
+              {service.ServiceName}
+            </Typography>
+
+            {/* Service Description */}
+            <Typography
+              sx={{
+                color: "text.secondary",
+                fontSize: { xs: 13, md: 14 },
+                lineHeight: 1.6,
+                display: "-webkit-box",
+                WebkitLineClamp: 3,
+                WebkitBoxOrient: "vertical",
+                overflow: "hidden",
+                flex: 1,
+              }}
+            >
+              {service.ServiceDescription}
+            </Typography>
+
+            {/* Action Indicator */}
             <Box
               sx={{
                 display: "flex",
-                gap: 2,
-                transition: { xs: "none", md: "transform 0.5s ease-in-out" },
-                transform: { xs: "none", md: `translateX(-${scrollPosition}px)` },
+                alignItems: "center",
+                gap: 0.5,
+                color: "primary.main",
+                fontSize: 13,
+                fontWeight: 600,
+                mt: 1,
+                opacity: 0.8,
+                transition: "all 0.3s ease",
+                "& svg": {
+                  transition: "transform 0.3s ease",
+                },
+                "&:hover": {
+                  opacity: 1,
+                  "& svg": {
+                    transform: "translateX(4px)",
+                  },
+                },
               }}
             >
-              {services.map((service) => (
-                <Card
-                  key={service.id}
-                  sx={{
-                    width: { xs: 220, sm: 240, md: cardWidth },
-                    minWidth: { xs: 220, sm: 240, md: cardWidth },
-                    height: { xs: 230, sm: 240, md: 350 },
-                    flexShrink: 0,
-                    scrollSnapAlign: { xs: "center", md: "none" },
-                    transition: "transform 0.3s, box-shadow 0.3s",
-                    "&:hover": {
-                      transform: "translateY(-8px)",
-                      boxShadow: 6,
-                    },
-                  }}
-                >
-                  <CardContent sx={{ p: 0 }}>
-                    <Box
-                      sx={{
-                        height: { xs: 90, md: 200 },
-                        width: "100%",
-                        overflow: "hidden",
-                      }}
-                    >
-                      {serviceImages[service.ServiceName] ? (
-                        <img
-                          src={serviceImages[service.ServiceName]}
-                          alt={service.ServiceName}
-                          style={{
-                            width: "100%",
-                            height: "100%",
-                            objectFit: "cover",
-                          }}
-                        />
-                      ) : (
-                        <Box
-                          sx={{
-                            width: "100%",
-                            height: "100%",
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            backgroundColor: "#e0e0e0",
-                            color: "#555",
-                            fontSize: 12,
-                          }}
-                        >
-                          No Image
-                        </Box>
-                      )}
-                    </Box>
-                    <Box sx={{ p: { xs: 1.5, md: 2 } }}>
-                      <Typography
-                        sx={{
-                          color: "text.secondary",
-                          fontSize: { xs: 13, md: 14 },
-                          mt: 1,
-                          display: "-webkit-box",
-                          WebkitLineClamp: 3,
-                          WebkitBoxOrient: "vertical",
-                          overflow: "hidden",
-                        }}
-                      >
-                        {service.ServiceDescription}
-                      </Typography>
-                    </Box>
-                  </CardContent>
-                  <CardActions sx={{ justifyContent: "center", pb: 2 }} />
-                </Card>
-              ))}
+              Learn more
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                <path d="M6 3L11 8L6 13" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
             </Box>
+          </Box>
+        </CardContent>
+      </Card>
+    ))}
+  </Box>
           </Box>
 
           {canScrollRight && (
@@ -321,7 +482,6 @@ export default function Home() {
           )}
         </Box>
 
-        {/* Mobile swipe hint */}
         <Typography
           sx={{
             display: { xs: "block", md: "none" },
@@ -331,7 +491,7 @@ export default function Home() {
             fontStyle: "italic",
           }}
         >
-          Swipe to see more services  →
+          Swipe to see more services →
         </Typography>
       </Box>
     </>
