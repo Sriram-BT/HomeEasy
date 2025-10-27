@@ -35,6 +35,9 @@ yarn-error.log*
 Thumbs.db
 .DS_Store
 
+# Environment files
+Backend/.env
+
 # package manager locks (optional - comment out if you want to commit them)
 # package-lock.json
 # yarn.lock
