@@ -18,8 +18,11 @@ const con = mongoose.connection;
 con.on("open", () => console.log("MongoDB connection established ✅"));
 
 // ✅ Initialize Twilio client
-const client = twilio(process.env.TWILIO_SID, process.env.TWILIO_AUTH_TOKEN);
-
+const client = require('twilio')(
+  process.env.TWILIO_API_KEY_SID,
+  process.env.TWILIO_API_KEY_SECRET,
+  { accountSid: process.env.TWILIO_ACCOUNT_SID }
+);
 // 📩 Send message route with user info
 app.post("/send-message", async (req, res) => {
   const { userName, userPhone, services, total } = req.body;
