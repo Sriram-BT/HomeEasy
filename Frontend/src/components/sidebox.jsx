@@ -17,7 +17,7 @@ export default function SideBox() {
         background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
         color: "white",
         borderRadius: 3,
-        height: "320px",
+        height: "350px",
         marginRight: "20px",
         display: "flex",
         flexDirection: "column",

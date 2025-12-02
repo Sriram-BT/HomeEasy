@@ -8,17 +8,21 @@ import ServiceContents from './components/serviceContent/Contents';
 import { CartProvider } from './components/serviceContent/CartProvoider';
 import WorkCart from './components/workCart/workCart';
 import { UserProvider } from './components/userContext/userContext';
+import ForgotPassword from './components/passwordReset/forgetPassword';
+import ResetPassword from './components/passwordReset/resetPassword';
 
 function App() {
   return (
-    <UserProvider>     {/* ✅ Wrap with UserProvider */}
-      <CartProvider>   {/* ✅ Then wrap with CartProvider */}
+    <UserProvider>    
+      <CartProvider>   
         <Router>
           <Header />
-          <div style={{ paddingTop: '80px' }}>
+          <div>
             <Routes>
               <Route path="/home" element={<Home />} />
               <Route path="/signin" element={<SighIn />} />
+              <Route path="/forgot-password" element={<ForgotPassword />} />
+              <Route path="/reset-password" element={<ResetPassword />} />
               <Route path="/create" element={<CreateUser />} />
               <Route path="/contents" element={<ServiceContents />} />
               <Route path="/cart" element={<WorkCart />} />

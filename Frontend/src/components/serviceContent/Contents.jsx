@@ -1,35 +1,38 @@
 import React, { useEffect, useState, useContext } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import api from "../../Api/axios";
-import AC_repair from "../../Assets/AC_Repair.jpg";
-import Deepclean from "../../Assets/Deepclean.jpg";
-import Plumbing from "../../Assets/Plumbing.jpg";
-import SofaCleaning from "../../Assets/SofaCleaning.jpg";
 import { CartContext } from "./CartProvoider";
 
 export default function ServiceContents() {
   const location = useLocation();
   const navigate = useNavigate();
-  const { addToCart } = useContext(CartContext); // ✅ Get addToCart function from context
+  const { addToCart } = useContext(CartContext);
   const { serviceId, serviceName } = location.state || {};
   const [serviceData, setServiceData] = useState(null);
 
-  // 🔧 Image mapping
+  // Load image dynamically
   const getServiceImage = (name) => {
-    const serviceName = name?.toLowerCase() || "";
-    if (serviceName.includes("ac") || serviceName.includes("air conditioner")) {
-      return AC_repair;
-    } else if (serviceName.includes("deep clean") || serviceName.includes("cleaning")) {
-      return Deepclean;
-    } else if (serviceName.includes("plumb")) {
-      return Plumbing;
-    } else if (serviceName.includes("sofa")) {
-      return SofaCleaning;
+    if (!name) return null;
+
+    try {
+      const formattedName = name
+        .toLowerCase()
+        .replace(/&/g, "")
+        .replace(/-/g, "_")
+        .replace(/\s+/g, "_");
+
+      try {
+        return require(`../../Assets/${formattedName}.png`);
+      } catch (e) {
+        return require(`../../Assets/${formattedName}.jpg`);
+      }
+    } catch (error) {
+      console.error("Image not found:", name);
+      return null;
     }
-    return null;
   };
 
-  // 📦 Fetch service details
+  // Fetch service data
   useEffect(() => {
     if (!serviceId) return;
 
@@ -45,25 +48,31 @@ export default function ServiceContents() {
     fetchService();
   }, [serviceId]);
 
-  // 🛒 Handle "Book Now" click
-const handleBookNow = () => {
-  if (serviceData) {
-    const itemToAdd = {
-      id: serviceData._id,  // always use the real _id
-      name: serviceData.ServiceName,
-      cost: serviceData.ServiceCost,
-      description: serviceData.ServiceDescription,
-      image: getServiceImage(serviceData.ServiceName),
-    };
+  // Add to cart
+  const handleBookNow = () => {
+    if (serviceData) {
+      const itemToAdd = {
+        id: serviceData._id,
+        name: serviceData.ServiceName,
+        cost: serviceData.ServiceCost,
+        description: serviceData.ServiceDescription,
+        image: getServiceImage(serviceData.ServiceName),
+      };
 
-    addToCart(itemToAdd);
-    navigate("/cart");
-  }
-};
-
+      addToCart(itemToAdd);
+      navigate("/cart");
+    }
+  };
 
   return (
-    <div style={{ padding: "5px", backgroundColor: "#f5f5f5", minHeight: "82vh", maxHeight: "82vh" }}>
+    <div
+      style={{
+        padding: "5px",
+        backgroundColor: "#f5f5f5",
+        minHeight: "82vh",
+        marginTop: "80px",
+      }}
+    >
       <div
         style={{
           maxWidth: "1200px",
@@ -73,7 +82,7 @@ const handleBookNow = () => {
           boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
         }}
       >
-        {/* Header */}
+        {/* HEADER */}
         <div
           style={{
             backgroundColor: "#1976d2",
@@ -83,32 +92,25 @@ const handleBookNow = () => {
             borderTopRightRadius: "8px",
           }}
         >
-          <h1
-            style={{
-              margin: 0,
-              fontSize: "20px",
-              display: "flex",
-              alignItems: "center",
-              gap: "8px",
-            }}
-          >
-            <span>🔧</span>
-            {serviceName || "Service Details"}
+          <h1 style={{ margin: 0, fontSize: "20px", display: "flex", gap: "8px" }}>
+            <span>🔧</span> {serviceName || "Service Details"}
           </h1>
         </div>
 
         {serviceData ? (
           <div style={{ padding: "16px" }}>
+            {/* GRID LAYOUT UPDATED */}
             <div
               style={{
                 display: "grid",
-                gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
+                gridTemplateColumns: "70% 30%",
                 gap: "16px",
+                alignItems: "start",
               }}
             >
-              {/* Left Column */}
+              {/* LEFT SECTION */}
               <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-                {/* Description Section */}
+                {/* DESCRIPTION */}
                 <div
                   style={{
                     border: "1px solid #e0e0e0",
@@ -117,39 +119,16 @@ const handleBookNow = () => {
                     backgroundColor: "#fafafa",
                   }}
                 >
-                  <h3
-                    style={{
-                      margin: "0 0 8px 0",
-                      fontSize: "16px",
-                      color: "#1976d2",
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "8px",
-                    }}
-                  >
-                    <span>ℹ️</span>
-                    Description
+                  <h3 style={{ margin: "0 0 8px", fontSize: "16px", color: "#1976d2" }}>
+                    ℹ️ Description
                   </h3>
-                  <hr
-                    style={{
-                      border: "none",
-                      borderTop: "1px solid #e0e0e0",
-                      margin: "8px 0",
-                    }}
-                  />
-                  <p
-                    style={{
-                      margin: 0,
-                      color: "#666",
-                      lineHeight: "1.5",
-                      fontSize: "14px",
-                    }}
-                  >
+                  <hr style={{ borderTop: "1px solid #e0e0e0", margin: "8px 0" }} />
+                  <p style={{ margin: 0, color: "#666", lineHeight: "1.5", fontSize: "14px" }}>
                     {serviceData.ServiceDescription}
                   </p>
                 </div>
 
-                {/* Result Section */}
+                {/* RESULT */}
                 <div
                   style={{
                     border: "1px solid #e0e0e0",
@@ -158,26 +137,10 @@ const handleBookNow = () => {
                     backgroundColor: "#fafafa",
                   }}
                 >
-                  <h3
-                    style={{
-                      margin: "0 0 8px 0",
-                      fontSize: "16px",
-                      color: "#4caf50",
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "8px",
-                    }}
-                  >
-                    <span>✅</span>
-                    Result
+                  <h3 style={{ margin: "0 0 8px", fontSize: "16px", color: "#4caf50" }}>
+                    ✅ Result
                   </h3>
-                  <hr
-                    style={{
-                      border: "none",
-                      borderTop: "1px solid #e0e0e0",
-                      margin: "8px 0",
-                    }}
-                  />
+                  <hr style={{ borderTop: "1px solid #e0e0e0", margin: "8px 0" }} />
                   <div
                     style={{
                       backgroundColor: "#4caf50",
@@ -193,7 +156,7 @@ const handleBookNow = () => {
                   </div>
                 </div>
 
-                {/* Detail Section */}
+                {/* DETAIL */}
                 <div
                   style={{
                     border: "1px solid #e0e0e0",
@@ -202,71 +165,51 @@ const handleBookNow = () => {
                     backgroundColor: "#fafafa",
                   }}
                 >
-                  <h3
-                    style={{
-                      margin: "0 0 8px 0",
-                      fontSize: "16px",
-                      color: "#333",
-                    }}
-                  >
+                  <h3 style={{ margin: "0 0 8px", fontSize: "16px", color: "#333" }}>
                     Detail
                   </h3>
-                  <hr
-                    style={{
-                      border: "none",
-                      borderTop: "1px solid #e0e0e0",
-                      margin: "8px 0",
-                    }}
-                  />
-                  <p
-                    style={{
-                      margin: 0,
-                      color: "#666",
-                      lineHeight: "1.5",
-                      fontSize: "14px",
-                    }}
-                  >
+                  <hr style={{ borderTop: "1px solid #e0e0e0", margin: "8px 0" }} />
+                  <p style={{ margin: 0, color: "#666", lineHeight: "1.5", fontSize: "14px" }}>
                     {serviceData.ServiceDetail}
                   </p>
                 </div>
               </div>
 
-              {/* Right Column - Image */}
+              {/* RIGHT IMAGE SECTION UPDATED */}
               <div
                 style={{
                   border: "1px solid #e0e0e0",
                   borderRadius: "8px",
-                  height: "280px",
+                  height: "350px",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
                   backgroundColor: "#e3f2fd",
                   overflow: "hidden",
-                  padding: 0,
                 }}
               >
-                {getServiceImage(serviceName || serviceData?.ServiceName) ? (
+                {getServiceImage(serviceData?.ServiceName) ? (
                   <img
-                    src={getServiceImage(serviceName || serviceData?.ServiceName)}
-                    alt={serviceName || "Service"}
+                    src={getServiceImage(serviceData?.ServiceName)}
+                    alt={serviceData?.ServiceName}
                     style={{
                       width: "100%",
                       height: "100%",
-                      objectFit: "cover",
+                      objectFit: "contain",
+                      objectPosition: "center",
                       borderRadius: "6px",
                     }}
                   />
                 ) : (
                   <div style={{ textAlign: "center" }}>
-                    <div style={{ fontSize: "60px", opacity: "0.3" }}>🔧</div>
-                    <h2 style={{ color: "#666", marginTop: "12px", fontSize: "18px" }}>Image</h2>
-                    <p style={{ color: "#999", fontSize: "13px" }}>Service image placeholder</p>
+                    <div style={{ fontSize: "60px", opacity: 0.3 }}>🔧</div>
+                    <p style={{ color: "#666", marginTop: "12px" }}>Image not available</p>
                   </div>
                 )}
               </div>
             </div>
 
-            {/* Book Section */}
+            {/* BOOK SECTION */}
             <div style={{ marginTop: "16px" }}>
               <div
                 style={{
@@ -282,23 +225,15 @@ const handleBookNow = () => {
                     justifyContent: "space-between",
                     alignItems: "center",
                     flexWrap: "wrap",
-                    gap: "12px",
                   }}
                 >
                   <div>
-                    <h3 style={{ margin: "0 0 4px 0", fontSize: "18px" }}>Book This Service</h3>
-                    <div
-                      style={{
-                        fontSize: "28px",
-                        color: "#1976d2",
-                        fontWeight: "bold",
-                        display: "flex",
-                        alignItems: "center",
-                      }}
-                    >
+                    <h3>Book This Service</h3>
+                    <div style={{ fontSize: "28px", fontWeight: "bold", color: "#1976d2" }}>
                       ₹{serviceData.ServiceCost}
                     </div>
                   </div>
+
                   <button
                     style={{
                       backgroundColor: "#1976d2",
@@ -308,12 +243,8 @@ const handleBookNow = () => {
                       fontSize: "16px",
                       borderRadius: "8px",
                       cursor: "pointer",
-                      fontWeight: "500",
-                      transition: "background-color 0.3s",
                     }}
-                    onMouseOver={(e) => (e.target.style.backgroundColor = "#1565c0")}
-                    onMouseOut={(e) => (e.target.style.backgroundColor = "#1976d2")}
-                    onClick={handleBookNow} // ✅ Added click handler
+                    onClick={handleBookNow}
                   >
                     Book Now
                   </button>
@@ -323,8 +254,8 @@ const handleBookNow = () => {
           </div>
         ) : (
           <div style={{ padding: "30px", textAlign: "center" }}>
-            <div style={{ fontSize: "40px", marginBottom: "12px" }}>⏳</div>
-            <p style={{ fontSize: "16px", color: "#666" }}>Loading service details...</p>
+            <div style={{ fontSize: "40px" }}>⏳</div>
+            <p>Loading service details...</p>
           </div>
         )}
       </div>

@@ -43,14 +43,12 @@ router.get('/getService/:id', async (req, res) => {
 })
 
 router.get('/search', async (req, res) => {
-  const query = req.query.q; // Example: /search?q=AC
-
+  const query = req.query.q;
   if (!query || query.trim() === '') {
     return res.status(400).json({ message: 'Search query is required' });
   }
 
   try {
-    // Case-insensitive search, matches whole word (e.g., "AC" but not "LAC")
     const results = await Services.find({
       ServiceName: { $regex: `\\b${query}\\b`, $options: 'i' }
     });

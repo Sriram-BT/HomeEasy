@@ -1,39 +1,32 @@
+import React, { createContext, useContext, useState, useEffect } from "react";
 
-import React, { createContext, useState, useContext } from "react";
-
-// Create context
 const UserContext = createContext();
+export const useUser = () => useContext(UserContext);
 
-// Create provider component
 export const UserProvider = ({ children }) => {
-  const [user, setUser] = useState(null); 
-  // user = { name: "John", phone: "9876543210" }
+  const [user, setUser] = useState(() => {
+    const savedUser = localStorage.getItem("user");
+    return savedUser ? JSON.parse(savedUser) : null;
+  });
 
-  const loginUser = (userData) => {
-    setUser(userData);
-    // optionally save in localStorage
-    localStorage.setItem("user", JSON.stringify(userData));
+  const [address, setAddress] = useState(() => {
+    return localStorage.getItem("address") || "";
+  });
+
+  const saveAddress = (newAddress) => {
+    setAddress(newAddress);
+    localStorage.setItem("address", newAddress);
   };
 
   const logoutUser = () => {
     setUser(null);
     localStorage.removeItem("user");
+    localStorage.removeItem("address");
   };
 
-  // On app load, restore user from localStorage
-  React.useEffect(() => {
-    const savedUser = localStorage.getItem("user");
-    if (savedUser) {
-      setUser(JSON.parse(savedUser));
-    }
-  }, []);
-
   return (
-    <UserContext.Provider value={{ user, loginUser, logoutUser }}>
+    <UserContext.Provider value={{ user, setUser, logoutUser, address, saveAddress }}>
       {children}
     </UserContext.Provider>
   );
 };
-
-// Create custom hook for easy access
-export const useUser = () => useContext(UserContext);
