@@ -28,7 +28,7 @@ export default function SignIn() {
   const [loginError, setLoginError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
-  const { loginUser } = useUser();
+  // const { loginUser } = useUser();
 
   const handleClickShowPassword = () => setShowPassword(!showPassword);
 
@@ -47,11 +47,11 @@ export default function SignIn() {
       localStorage.setItem("token", token);
       localStorage.setItem("user", JSON.stringify(user));
 
-      loginUser({
-        name: user.name || "Unknown",
-        phoneNumber: user.phoneNumber || "N/A",
-        email: user.email || email,
-      });
+      // loginUser({
+      //   name: user.name || "Unknown",
+      //   phoneNumber: user.phoneNumber || "N/A",
+      //   email: user.email || email,
+      // });
 
       navigate("/home");
     } catch (err) {

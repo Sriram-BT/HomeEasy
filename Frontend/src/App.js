@@ -11,22 +11,54 @@ import { UserProvider } from './components/userContext/userContext';
 import ForgotPassword from './components/passwordReset/forgetPassword';
 import ResetPassword from './components/passwordReset/resetPassword';
 
+// ⭐ Protected Route inside App.js
+function ProtectedRoute({ children }) {
+  const token = localStorage.getItem("token");
+  return token ? children : <Navigate to="/signin" replace />;
+}
+
 function App() {
   return (
-    <UserProvider>    
-      <CartProvider>   
+    <UserProvider>
+      <CartProvider>
         <Router>
           <Header />
           <div>
             <Routes>
-              <Route path="/home" element={<Home />} />
+              <Route
+                path="/home"
+                element={
+                  <ProtectedRoute>
+                    <Home />
+                  </ProtectedRoute>
+                }
+              />
+
               <Route path="/signin" element={<SighIn />} />
               <Route path="/forgot-password" element={<ForgotPassword />} />
               <Route path="/reset-password" element={<ResetPassword />} />
               <Route path="/create" element={<CreateUser />} />
-              <Route path="/contents" element={<ServiceContents />} />
-              <Route path="/cart" element={<WorkCart />} />
-              <Route path="/" element={<Navigate to="/home" />} />
+
+              <Route
+                path="/contents"
+                element={
+                  <ProtectedRoute>
+                    <ServiceContents />
+                  </ProtectedRoute>
+                }
+              />
+
+              <Route
+                path="/cart"
+                element={
+                  <ProtectedRoute>
+                    <WorkCart />
+                  </ProtectedRoute>
+                }
+              />
+
+              {/* Default redirect */}
+              <Route path="/" element={<Navigate to="/signin" />} />
             </Routes>
           </div>
         </Router>

@@ -10,12 +10,14 @@ const twilio = require("twilio");
 const app = express();
 app.use(cors());
 app.use(express.json());
+const uniqueId = Math.floor(1000 + Math.random() * 9000); // 4 digit ref
+
 
 /* ======================================================
 🔹 1. Connect to MongoDB
 ====================================================== */
 mongoose
-  .connect(process.env.MONGO_URI)
+  .connect("mongodb://localhost/e_commerse")
   .then(() => console.log("✅ MongoDB connection established"))
   .catch((err) => console.error("❌ MongoDB connection error:", err));
 
@@ -32,7 +34,7 @@ const client = twilio(
 🔹 3. Initialize Google Sheets API
 ====================================================== */
 const auth = new google.auth.GoogleAuth({
-  keyFile: path.join(__dirname, process.env.GOOGLE_CREDENTIALS_PATH),
+  keyFile: path.join(__dirname, "credential.json"),
   scopes: [
     "https://www.googleapis.com/auth/spreadsheets",
     "https://www.googleapis.com/auth/drive",
@@ -80,8 +82,8 @@ app.post("/send-message", async (req, res) => {
   }
 
   try {
-    /* ================= SMS to Admin ================== */
-    const messageBody = `📦 New Booking!
+    /* ================= SMS to Admin Only ================= */
+const messageBody = `📦 New Booking! #${uniqueId}
 User: ${userName}
 Phone: ${userPhone}
 Address: ${address || "Not provided"}
@@ -100,37 +102,12 @@ Total: ₹${total}`;
       console.error("❌ Admin SMS failed:", err.message);
     }
 
-    /* ================= Confirmation SMS to User ================= */
-    const userMessageBody = `✅ Booking Confirmed!
-Hi ${userName},
-Thank you for your booking!
-
-Services booked:
-${services.map((s) => `- ${s.name} (₹${s.cost})`).join("\n")}
-
-Total: ₹${total}
-Delivery Address: ${address || "N/A"}
-We'll contact you shortly.
-
-Thank you! 🙏`;
-
-    try {
-      await client.messages.create({
-        body: userMessageBody,
-        from: process.env.TWILIO_PHONE_NUMBER,
-        to: formattedUserPhone,
-      });
-      console.log("📩 SMS sent to user");
-    } catch (err) {
-      console.error("❌ User SMS failed:", err.message);
-    }
-
     /* ================= Add to Google Sheet ================= */
     try {
       const googleClient = await auth.getClient();
       const sheets = google.sheets({ version: "v4", auth: googleClient });
 
-      const spreadsheetId = process.env.GOOGLE_SPREADSHEET_ID;
+      const spreadsheetId = "1PzietB4AAJKinyYeCdIuTzEwD5DP384HFf1N_0uQO-c";
 
       const now = new Date();
       const bookingDate = now.toLocaleDateString("en-IN");
@@ -144,8 +121,6 @@ Thank you! 🙏`;
         service.cost,
         "Pending",
         "System",
-        bookingDate,
-        bookingTime,
       ]);
 
       console.log("📤 Sending rows to Google Sheets:", bookingRows);

@@ -9,8 +9,8 @@ export default function ServiceContents() {
   const { addToCart } = useContext(CartContext);
   const { serviceId, serviceName } = location.state || {};
   const [serviceData, setServiceData] = useState(null);
+  const [loading, setLoading] = useState(false); // ⬅ added
 
-  // Load image dynamically
   const getServiceImage = (name) => {
     if (!name) return null;
 
@@ -49,18 +49,27 @@ export default function ServiceContents() {
   }, [serviceId]);
 
   // Add to cart
-  const handleBookNow = () => {
-    if (serviceData) {
-      const itemToAdd = {
-        id: serviceData._id,
-        name: serviceData.ServiceName,
-        cost: serviceData.ServiceCost,
-        description: serviceData.ServiceDescription,
-        image: getServiceImage(serviceData.ServiceName),
-      };
+  const handleBookNow = async () => {
+    if (loading) return; // ⬅ Prevent multiple calls
+    setLoading(true);
 
-      addToCart(itemToAdd);
-      navigate("/cart");
+    try {
+      if (serviceData) {
+        const itemToAdd = {
+          id: serviceData._id,
+          name: serviceData.ServiceName,
+          cost: serviceData.ServiceCost,
+          description: serviceData.ServiceDescription,
+          image: getServiceImage(serviceData.ServiceName),
+        };
+
+        addToCart(itemToAdd);
+        navigate("/cart");
+      }
+    } catch (error) {
+      console.error("Booking Error:", error);
+    } finally {
+      setLoading(false); // ⬅ Re-enable button after process
     }
   };
 
@@ -82,7 +91,6 @@ export default function ServiceContents() {
           boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
         }}
       >
-        {/* HEADER */}
         <div
           style={{
             backgroundColor: "#1976d2",
@@ -99,7 +107,6 @@ export default function ServiceContents() {
 
         {serviceData ? (
           <div style={{ padding: "16px" }}>
-            {/* GRID LAYOUT UPDATED */}
             <div
               style={{
                 display: "grid",
@@ -108,9 +115,7 @@ export default function ServiceContents() {
                 alignItems: "start",
               }}
             >
-              {/* LEFT SECTION */}
               <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-                {/* DESCRIPTION */}
                 <div
                   style={{
                     border: "1px solid #e0e0e0",
@@ -128,7 +133,6 @@ export default function ServiceContents() {
                   </p>
                 </div>
 
-                {/* RESULT */}
                 <div
                   style={{
                     border: "1px solid #e0e0e0",
@@ -156,7 +160,6 @@ export default function ServiceContents() {
                   </div>
                 </div>
 
-                {/* DETAIL */}
                 <div
                   style={{
                     border: "1px solid #e0e0e0",
@@ -175,7 +178,6 @@ export default function ServiceContents() {
                 </div>
               </div>
 
-              {/* RIGHT IMAGE SECTION UPDATED */}
               <div
                 style={{
                   border: "1px solid #e0e0e0",
@@ -209,7 +211,6 @@ export default function ServiceContents() {
               </div>
             </div>
 
-            {/* BOOK SECTION */}
             <div style={{ marginTop: "16px" }}>
               <div
                 style={{
@@ -236,17 +237,19 @@ export default function ServiceContents() {
 
                   <button
                     style={{
-                      backgroundColor: "#1976d2",
+                      backgroundColor: loading ? "#9e9e9e" : "#1976d2",
                       color: "white",
                       border: "none",
                       padding: "12px 40px",
                       fontSize: "16px",
                       borderRadius: "8px",
-                      cursor: "pointer",
+                      cursor: loading ? "not-allowed" : "pointer",
+                      opacity: loading ? 0.6 : 1,
                     }}
+                    disabled={loading}
                     onClick={handleBookNow}
                   >
-                    Book Now
+                    {loading ? "Processing..." : "Book Now"}
                   </button>
                 </div>
               </div>
